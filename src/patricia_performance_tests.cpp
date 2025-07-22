@@ -244,7 +244,7 @@ int main() {
             }
 
             // Repeat for another IP
-            uint8_t* ip_as_bytes_another = (uint8_t*)&pair.first;
+            uint8_t* ip_as_bytes_another = (uint8_t*)&pair.second;
 
             next_hop = lpm_lookup(lookup_tree, ip_as_bytes_another);
 
