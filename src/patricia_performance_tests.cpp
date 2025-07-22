@@ -145,7 +145,7 @@ int main() {
             continue;
         }   
 
-        std::cout << "Prefix length: " << prefix.cidr_prefix_length << std::endl;
+        // std::cout << "Prefix length: " << prefix.cidr_prefix_length << std::endl;
 
         uint8_t* ip_as_bytes = (uint8_t*)&prefix.subnet_address;
 
@@ -154,6 +154,9 @@ int main() {
     }
 
     std::cout << "Finished subnet load to patricia" << std::endl;
+
+    // Print tree stats
+    lpm_print_stats(lookup_tree);
 
     // Load example traffic
     std::ifstream example_traffic("cable_isp_traffic.json");
@@ -266,7 +269,7 @@ int main() {
 
     float megaops_per_second = (float)total_ops / ((float)total_used_nanoseconds / (float)1000000000) / 1000000;
 
-    printf("Total time is %d seconds total ops: %d\nMillion of ops per second: "
+    printf("Total time is %ld seconds total ops: %ld\nMillion of ops per second: "
            "%.1f\n",
            used_seconds, total_ops, megaops_per_second);
 
