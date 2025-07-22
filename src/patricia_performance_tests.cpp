@@ -13,7 +13,11 @@
 
 #include "nlohmann/json.hpp"
 
+#include <boost/algorithm/string.hpp>
+
 #include "libpatricia/patricia.hpp"
+
+#include "lpm.h"
 
 using json = nlohmann::json;
 
@@ -51,9 +55,80 @@ bool convert_ip_as_string_to_uint_safe(const std::string& ip, uint32_t& ip_as_in
 #endif
 
 
+// Safe way to convert string to any integer
+bool convert_string_to_any_integer_safe(const std::string& line, int& value) {
+    int temp_value = 0;
+
+    try {
+        temp_value = std::stoi(line);
+    } catch (...) {
+        // Could not parse number correctly
+        return false;
+    }
+
+    value = temp_value;
+
+    return true;
+}
+
+
+class subnet_cidr_mask_t {
+    public:
+    subnet_cidr_mask_t() {
+        this->subnet_address     = 0;
+        this->cidr_prefix_length = 0;
+    }
+    subnet_cidr_mask_t(uint32_t subnet_address, uint32_t cidr_prefix_length) {
+        this->subnet_address     = subnet_address;
+        this->cidr_prefix_length = cidr_prefix_length;
+    }
+
+    // Big endian (network byte order)
+    uint32_t subnet_address = 0;
+
+    // Little endian
+    uint32_t cidr_prefix_length = 0;
+
+};
+
+// Converts IP address in cidr form 11.22.33.44/24 to our representation
+bool convert_subnet_from_string_to_binary_with_cidr_format_safe(const std::string& subnet_cidr, subnet_cidr_mask_t& subnet_cidr_mask) {
+    if (subnet_cidr.empty()) {
+        return false;
+    }
+
+    std::vector<std::string> subnet_as_string;
+
+    split(subnet_as_string, subnet_cidr, boost::is_any_of("/"), boost::token_compress_on);
+
+    if (subnet_as_string.size() != 2) {
+        return false;
+    }
+
+    uint32_t subnet_as_int = 0;
+
+    bool ip_to_integer_convresion_result = convert_ip_as_string_to_uint_safe(subnet_as_string[0], subnet_as_int);
+
+    if (!ip_to_integer_convresion_result) {
+        return false;
+    }
+
+    int cidr = 0;
+
+    bool ip_conversion_result = convert_string_to_any_integer_safe(subnet_as_string[1], cidr);
+
+    if (!ip_conversion_result) {
+        return false;
+    }
+
+    subnet_cidr_mask = subnet_cidr_mask_t(subnet_as_int, cidr);
+
+    return true;
+}
+
+
 int main() {
-    patricia_tree_t* lookup_tree;
-    lookup_tree = New_Patricia(32);
+    lpm_trie_t *lookup_tree = lpm_create(LPM_IPV4_MAX_DEPTH);
 
     std::string line;
     std::ifstream myfile("cable_isp_prefixes.txt");
@@ -65,7 +140,19 @@ int main() {
 
     std::cout << "Start subnet load to patricia" << std::endl;
     while (getline(myfile, line)) {
-        make_and_lookup(lookup_tree, (char*)line.c_str());
+        subnet_cidr_mask_t prefix{};
+
+        if (!convert_subnet_from_string_to_binary_with_cidr_format_safe(line, prefix)) {
+            std::cerr << "Cannot parse " << line << " as prefix" << std::endl;
+            continue;
+        }   
+
+        std::cout << "Prefix length: " << prefix.cidr_prefix_length << std::endl;
+
+        uint8_t* ip_as_bytes = (uint8_t*)&prefix.subnet_address;
+
+        // 10 is random next hop
+        lpm_add(lookup_tree, ip_as_bytes, prefix.cidr_prefix_length, 10);
     }
 
     std::cout << "Finished subnet load to patricia" << std::endl;
@@ -190,5 +277,5 @@ int main() {
            "%.1f\n",
            used_seconds, total_ops, megaops_per_second);
 
-    Destroy_Patricia(lookup_tree, [](void* ptr) {});
+    lpm_destroy(lookup_tree);
 }
