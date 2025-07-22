@@ -56,7 +56,7 @@ int main() {
     lookup_tree = New_Patricia(32);
 
     std::string line;
-    std::ifstream myfile("isp_prefixes.txt");
+    std::ifstream myfile("cable_isp_prefixes.txt");
 
     if (!myfile.is_open()) {
         std::cerr << "Could not open file with prefix list" << std::endl;
@@ -71,7 +71,7 @@ int main() {
     std::cout << "Finished subnet load to patricia" << std::endl;
 
     // Load example traffic
-    std::ifstream example_traffic("real_traffic.json");
+    std::ifstream example_traffic("cable_isp_traffic.json");
 
     if (!example_traffic.is_open()) {
         std::cerr << "Could not open file with example traffic" << std::endl;
@@ -151,7 +151,7 @@ int main() {
     unsigned long total_ops = number_of_reruns * vector_of_packets.size();
 
     uint64_t match_source = 0;
-    uint64_t match_destionation = 0;
+    uint64_t match_destination = 0;
 
     for (int j = 0; j < number_of_reruns; j++) {
         for (const auto& pair: vector_of_packets) {
@@ -169,7 +169,7 @@ int main() {
             found_patrica_node     = patricia_search_best2(lookup_tree, &prefix_for_check_adreess, 1);
 
             if (found_patrica_node != NULL) {
-                match_destionation++;
+                match_destination++;
             }
         }
     }
@@ -177,7 +177,7 @@ int main() {
     struct timespec finish_time;
     clock_gettime(CLOCK_REALTIME, &finish_time);
 
-    std::cout << "match_source: " << match_source << " match_destionation: " << match_destionation << std::endl;
+    std::cout << "match_source: " << match_source << " match_destination: " << match_destination << std::endl;
 
     unsigned long used_seconds     = finish_time.tv_sec - start_time.tv_sec;
     unsigned long used_nanoseconds = finish_time.tv_nsec - start_time.tv_nsec;
