@@ -15,8 +15,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "libpatricia/patricia.hpp"
-
 #include "lpm.h"
 
 using json = nlohmann::json;
@@ -224,11 +222,6 @@ int main() {
 
     // Process vector_of_packets
 
-    prefix_t prefix_for_check_adreess;
-    prefix_for_check_adreess.family     = AF_INET;
-    prefix_for_check_adreess.bitlen     = 32;
-    // prefix_for_check_adreess.add.sin.s_addr = 123123123;
-
     struct timespec start_time;
     clock_gettime(CLOCK_REALTIME, &start_time);
 
@@ -242,20 +235,20 @@ int main() {
 
     for (int j = 0; j < number_of_reruns; j++) {
         for (const auto& pair: vector_of_packets) {
-            prefix_for_check_adreess.add.sin.s_addr = pair.first;
+            uint8_t* ip_as_bytes = (uint8_t*)&pair.first;
 
-            patricia_node_t* found_patrica_node     = patricia_search_best2(lookup_tree, &prefix_for_check_adreess, 1);
+            auto next_hop = lpm_lookup(lookup_tree, ip_as_bytes);
 
-            if (found_patrica_node != NULL) {
+            if (next_hop != 0) {
                 match_source++;
             }
 
             // Repeat for another IP
-            prefix_for_check_adreess.add.sin.s_addr = pair.second;
+            uint8_t* ip_as_bytes_another = (uint8_t*)&pair.first;
 
-            found_patrica_node     = patricia_search_best2(lookup_tree, &prefix_for_check_adreess, 1);
+            next_hop = lpm_lookup(lookup_tree, ip_as_bytes_another);
 
-            if (found_patrica_node != NULL) {
+            if (next_hop != 0) {
                 match_destination++;
             }
         }
