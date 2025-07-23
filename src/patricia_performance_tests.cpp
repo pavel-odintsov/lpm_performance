@@ -253,7 +253,7 @@ int main() {
 
             uint32_t dst_next_hop = lpm_lookup(lookup_tree, dst_ip_as_bytes);
 
-            std::cout << "next hop: " << src_next_hop << " " << dst_next_hop << std::endl;
+            // std::cout << "next hop: " << src_next_hop << " " << dst_next_hop << std::endl;
 
             if (dst_next_hop != std::numeric_limits<uint32_t>::max()) {
                 match_destination++;
