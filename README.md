@@ -10,7 +10,6 @@ git clone git@github.com:MuriloChianfa/liblpm.git
 mkdir build && cd build
 cmake ..
 make -j$(nproc)
-sudo make install
 ```
 
 # Build process
