@@ -148,7 +148,7 @@ int main() {
 
         uint8_t* ip_as_bytes = (uint8_t*)&prefix.subnet_address;
 
-        std::cout << line << "Prefix length: " << prefix.cidr_prefix_length << " first byte: " << int(ip_as_bytes[0]) << " " <<  int(ip_as_bytes[1]) << " " <<  int(ip_as_bytes[2]) << " " <<  int(ip_as_bytes[3]) << std::endl;
+        // std::cout << line << "Prefix length: " << prefix.cidr_prefix_length << " first byte: " << int(ip_as_bytes[0]) << " " <<  int(ip_as_bytes[1]) << " " <<  int(ip_as_bytes[2]) << " " <<  int(ip_as_bytes[3]) << std::endl;
 
         // 10 is random next hop
         lpm_add(lookup_tree, ip_as_bytes, prefix.cidr_prefix_length, 10);
