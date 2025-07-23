@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+#include <limits>
 
 #include "nlohmann/json.hpp"
 
@@ -242,7 +243,8 @@ int main() {
 
             uint32_t src_next_hop = lpm_lookup(lookup_tree, src_ip_as_bytes);
 
-            if (src_next_hop != 0) {
+            // lpm_lookup returns max uint32_t when not found
+            if (src_next_hop != std::numeric_limits<uint32_t>::max()) {
                 match_source++;
             }
 
@@ -251,7 +253,9 @@ int main() {
 
             uint32_t dst_next_hop = lpm_lookup(lookup_tree, dst_ip_as_bytes);
 
-            if (dst_next_hop != 0) {
+            std::cout << "next hop: " << src_next_hop << " " << dst_next_hop << std::endl;
+
+            if (dst_next_hop != std::numeric_limits<uint32_t>::max()) {
                 match_destination++;
             }
         }
