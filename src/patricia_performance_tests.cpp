@@ -145,9 +145,9 @@ int main() {
             continue;
         }   
 
-        // std::cout << "Prefix length: " << prefix.cidr_prefix_length << std::endl;
-
         uint8_t* ip_as_bytes = (uint8_t*)&prefix.subnet_address;
+
+        std::cout << line << "Prefix length: " << prefix.cidr_prefix_length << " first byte: " << int(ip_as_bytes[0]) << " " <<  int(ip_as_bytes[1]) << " " <<  int(ip_as_bytes[2]) << " " <<  int(ip_as_bytes[3]) << std::endl;
 
         // 10 is random next hop
         lpm_add(lookup_tree, ip_as_bytes, prefix.cidr_prefix_length, 10);
@@ -238,20 +238,20 @@ int main() {
 
     for (int j = 0; j < number_of_reruns; j++) {
         for (const auto& pair: vector_of_packets) {
-            uint8_t* ip_as_bytes = (uint8_t*)&pair.first;
+            uint8_t* src_ip_as_bytes = (uint8_t*)&pair.first;
 
-            auto next_hop = lpm_lookup(lookup_tree, ip_as_bytes);
+            uint32_t src_next_hop = lpm_lookup(lookup_tree, src_ip_as_bytes);
 
-            if (next_hop != 0) {
+            if (src_next_hop != 0) {
                 match_source++;
             }
 
             // Repeat for another IP
-            uint8_t* ip_as_bytes_another = (uint8_t*)&pair.second;
+            uint8_t* dst_ip_as_bytes = (uint8_t*)&pair.second;
 
-            next_hop = lpm_lookup(lookup_tree, ip_as_bytes_another);
+            uint32_t dst_next_hop = lpm_lookup(lookup_tree, dst_ip_as_bytes);
 
-            if (next_hop != 0) {
+            if (dst_next_hop != 0) {
                 match_destination++;
             }
         }
